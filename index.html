@@ -12,7 +12,7 @@
     </head>
     <body>
         This is the rendered web page.<br/>
-        <button id="recordButton">Doesn't currently do anything</button></br>
+        <button id="recordButton">Start analyzing mic audio</button></br>
         <svg id="graph" viewBox="0 0 100 100">
 
         </svg>
@@ -25,10 +25,16 @@
             let frameCount = 0;
             recordButton.addEventListener("click", () => {
 
-                if (isRecordButtonPressed) return;
+                if (isRecordButtonPressed) {
+                    isRecordButtonPressed = false;
+                    cancelAnimationFrame(animationFrame);
+                    recordButton.innerHTML = `Start analyzing mic audio`;
+                    return;
+                }
+                recordButton.innerHTML = `Stop analyzing mic audio`;
                 isRecordButtonPressed = true;
 
-                // Lots inspired by https://github.com/mdn/webaudio-examples/blob/main/voice-change-o-matic/scripts/app.js#L142
+                // Lots inspired by https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
                 audioContext = new AudioContext();
 
                 // Create the analyzer
@@ -36,11 +42,9 @@
                 analyzer.fftSize = 2048;
 
                 const frameFunction = () => {
-                    // animationFrame = requestAnimationFrame(frameFunction);
-                    if (frameCount++ % 100 > 0) return; // Only do data processing on every hundredth frame
+                    animationFrame = requestAnimationFrame(frameFunction);
                     const dataArray = new Float32Array(parseInt(analyzer.fftSize / 2));
                     analyzer.getFloatFrequencyData(dataArray);
-                    console.log(dataArray);
                     graphArray(dataArray);
                 };
 
@@ -65,7 +69,7 @@
                 for (let i = 0; i < array.length - 1; i++) {
                     if (isNaN(array[i]) || isNaN(array[i + 1])) continue;
                     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    path.setAttribute(`stroke-width`, `2`);
+                    path.setAttribute(`stroke-width`, `0.5`);
                     path.setAttribute(`stroke`, `#000`);
                     path.setAttribute(`d`, `M${i / array.length * 100} ${50 - 50 / maxAbsInArray * array[i]} L${(i + 1) / array.length * 100} ${50 - 50 / maxAbsInArray * array[i + 1]}`);
                     graph.appendChild(path);
