@@ -12,6 +12,7 @@
     </head>
     <body>
         This is the rendered web page.<br/>
+        <label>Max power observed (dB): </label><div id="statsDiv"></div><br/>
         <button id="recordButton">Start analyzing mic audio</button></br>
         <svg id="graph" viewBox="0 0 100 100">
 
@@ -38,7 +39,9 @@
                 audioContext = new AudioContext();
 
                 // Create the analyzer
-                const analyzer = audioContext.createAnalyser();
+                const analyzer = audioContext.createAnalyser({
+                    sampleRate: 44000,
+                });
                 analyzer.fftSize = 2048;
 
                 const frameFunction = () => {
@@ -64,6 +67,7 @@
                 let maxAbsInArray = 0;
                 for (let element of array) {
                     if (Math.abs(element) > maxAbsInArray) maxAbsInArray = Math.abs(element);
+                    if (isNaN(parseFloat(statsDiv.innerHTML)) || element > parseFloat(statsDiv.innerHTML)) statsDiv.innerHTML = element;
                 }
                 
                 for (let i = 0; i < array.length - 1; i++) {
