@@ -2,33 +2,76 @@
 <html>
     <head>
         <title>Voice Commands in Broswer UI</title>
+        <style>
+            #graph {
+                width: 400px;
+                height: 400px;
+                border: 2px solid #000;
+            }
+        </style>
     </head>
     <body>
-        Press this button to start recording and press it again to stop recording.<br/>
-        <button id="recordButton">Start recording</button>
+        This is the rendered web page.<br/>
+        <button id="recordButton">Doesn't currently do anything</button></br>
+        <svg id="graph" viewBox="0 0 100 100">
+
+        </svg>
         <script>
 
-            // Lots inspired by https://github.com/mdn/webaudio-examples/blob/main/voice-change-o-matic/scripts/app.js#L142
-            const audioContext = new AudioContext();
-            
-
-            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                
-            });
-
+            let audioContext;
+            let source;
+            let animationFrame;
+            let isRecordButtonPressed = false;
+            let frameCount = 0;
             recordButton.addEventListener("click", () => {
-                if (/Start\srecording/.test(recordButton.innerHTML)) {
-                    // Handle starting the recording
-                    dataBuffer = [];
-                    mediaRecorder.start();
-                    recordButton.innerHTML = `Stop recording`;
-                } else {
-                    console.log(`Stopping recording`);
-                    // Handle stopping and saving the recording
-                    mediaRecorder.stop();
-                    recordButton.innerHTML = `Start recording`;
-                }
+
+                if (isRecordButtonPressed) return;
+                isRecordButtonPressed = true;
+
+                // Lots inspired by https://github.com/mdn/webaudio-examples/blob/main/voice-change-o-matic/scripts/app.js#L142
+                audioContext = new AudioContext();
+
+                // Create the analyzer
+                const analyzer = audioContext.createAnalyser();
+                analyzer.fftSize = 2048;
+
+                const frameFunction = () => {
+                    // animationFrame = requestAnimationFrame(frameFunction);
+                    if (frameCount++ % 100 > 0) return; // Only do data processing on every hundredth frame
+                    const dataArray = new Float32Array(parseInt(analyzer.fftSize / 2));
+                    analyzer.getFloatFrequencyData(dataArray);
+                    console.log(dataArray);
+                    graphArray(dataArray);
+                };
+
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                    source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyzer);
+                    // Start the animation frame that regularly updates the data
+                    setTimeout(() => {
+                        frameFunction();
+                    }, 1000)
+                });
             });
+
+            function graphArray(array) {
+                for (let child of graph.querySelectorAll("path")) graph.removeChild(child);
+
+                let maxAbsInArray = 0;
+                for (let element of array) {
+                    if (Math.abs(element) > maxAbsInArray) maxAbsInArray = Math.abs(element);
+                }
+                
+                for (let i = 0; i < array.length - 1; i++) {
+                    if (isNaN(array[i]) || isNaN(array[i + 1])) continue;
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute(`stroke-width`, `2`);
+                    path.setAttribute(`stroke`, `#000`);
+                    path.setAttribute(`d`, `M${i / array.length * 100} ${50 - 50 / maxAbsInArray * array[i]} L${(i + 1) / array.length * 100} ${50 - 50 / maxAbsInArray * array[i + 1]}`);
+                    graph.appendChild(path);
+                }
+            }
+
         </script>
     </body>
 </html>
