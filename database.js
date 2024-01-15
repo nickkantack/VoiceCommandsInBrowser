@@ -25,7 +25,7 @@ class Database {
         });
         this.#config = args;
         console.log(`Making database open request`);
-        const databaseOpenRequest = indexedDB.open(this.#config.name);
+        const databaseOpenRequest = indexedDB.open(this.#config.databaseName);
         databaseOpenRequest.onerror = (error) => {
             console.error(`Problem opening database with name ${this.#config.databaseName}: ${error}`);
         };
