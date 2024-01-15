@@ -2,6 +2,7 @@
 import { Debouncer } from "./util.js";
 import { GraphingUtil } from "./graphing.js";
 import { SpectrogramBuilder } from "./spectrogramBuilder.js";
+import { Database } from "./database.js";
 
 let audioContext;
 let source;
@@ -55,10 +56,8 @@ recordButton.addEventListener("click", () => {
                     for (let s = 0; s < spectrogramBuilder.getSpectra().length; s++) {
                         const spectrum = spectrogramBuilder.getSpectra()[s];
                         for (let i = 0; i < spectrum.length; i++) {
-                            console.log(`${parseInt(100 * (s * spectrogramBuilder.getSpectra().length + i) / (spectrogramBuilder.getSpectra().length * spectrogramBuilder.getSpectra()[0].length))}% done drawing.`);
                             let element = spectrum[i];
                             const colorScore = parseInt(255 * ((element - minValue) / (maxValue - minValue + 1E-4)));
-                            console.log(colorScore);
                             const dilation = 2;
                             ctx.fillStyle = `rgb(${colorScore}, ${colorScore}, ${colorScore})`;
                             ctx.fillRect(dilation * s, dilation * i, dilation, dilation);
@@ -82,10 +81,34 @@ recordButton.addEventListener("click", () => {
 let doBuildSpectrum = false;
 const spectrogramBuilder = new SpectrogramBuilder({ 
     millisBetweenConsecutiveSpectra: 50,
-    numberOfSpectra: 30
+    numberOfSpectra: 60
  });
 buildSpectrogramButton.addEventListener("click", () => {
     if (spectrogramBuilder.isFull()) spectrogramBuilder.reset();
     if (recordButton.innerHTML == `Start analyzing mic audio`) recordButton.click();
     doBuildSpectrum = true;
 });
+
+// Test out the database stuff
+(async () => {
+
+    console.log(`Running database test`);
+
+    const database = new Database({ databaseName: "turtleDatabase", objectStoreName: "turtleStoreName" });
+
+    // Wait a little bit
+    await new Promise((resolve, reject) => { setTimeout(resolve, 1000); });
+
+    database.write({ key: "turtleKey", value: "turtleValue" });
+    
+    // Wait a little bit
+    await new Promise((resolve, reject) => { setTimeout(resolve, 250); });
+
+    console.log(`Read this from the database:`);
+    console.log(await database.read("turtleKey"));
+
+    database.delete("turtleKey");
+
+    console.log(`Done with the database test`);
+
+})();
