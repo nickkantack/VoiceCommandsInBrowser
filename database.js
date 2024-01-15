@@ -68,10 +68,26 @@ class Database {
                 .get(key);
             request.onerror = (event) => {
                 console.error(`Failed to read key ${key}`);
-                reject(error);
+                reject(event);
             };
             request.onsuccess = (event) => {
                 resolve(event.target.result);
+            }
+        });
+    }
+
+    async hasKey(key) {
+        return await new Promise((resolve, reject) => {
+            const request = this.#database.transaction([this.#config.objectStoreName], "readonly")
+                .objectStore(this.#config.objectStoreName)
+                .openCursor(key);
+            request.onerror = (event) => {
+                console.error(`Failed to check for key ${key}`);
+                reject(event);
+            };
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                resolve(cursor ? true : false);
             }
         });
     }
