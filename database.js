@@ -104,6 +104,38 @@ class Database {
         };
     }
 
+    async test() {
+
+        console.log(`Running database test`);
+
+        const database = new Database({ databaseName: "turtleDatabase", objectStoreName: "turtleStoreName" });
+
+        // Wait a little bit
+        await new Promise((resolve, reject) => { setTimeout(resolve, 1000); });
+
+        console.log(`Does the database have key turtleKey? The answer is ${await database.hasKey("turtleKey")}`);
+
+        database.write({ key: "turtleKey", value: "turtleValue" });
+        
+        // Wait a little bit
+        await new Promise((resolve, reject) => { setTimeout(resolve, 250); });
+
+        console.log(`Does the database have key turtleKey? The answer is ${await database.hasKey("turtleKey")}`);
+
+        console.log(`Read this from the database:`);
+        console.log(await database.read("turtleKey"));
+
+        database.delete("turtleKey");
+
+        // Wait a little bit
+        await new Promise((resolve, reject) => { setTimeout(resolve, 250); });
+
+        console.log(`Does the database have key turtleKey? The answer is ${await database.hasKey("turtleKey")}`);
+
+        console.log(`Done with the database test`);
+
+    }
+
 }
 
 export { Database }

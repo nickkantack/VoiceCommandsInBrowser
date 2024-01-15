@@ -36,34 +36,9 @@ recordButton.addEventListener("click", () => {
         GraphingUtil.graphArray(graph, dataArray);
         if (doBuildSpectrum) {
             spectrogramBuilder.updateSpectrum(dataArray);
-            console.log(`Added spectrum. Spectrograph has ${spectrogramBuilder.getSpectra().length}`);
             if (spectrogramBuilder.isFull()) {
                 doBuildSpectrum = false;
-                // TODO graph the spectrogram
-                setTimeout(() => {
-                    const ctx = spectrogramCanvas.getContext("2d");
-                    ctx.fillStyle = `rbg(255, 255, 255)`;
-                    ctx.fillRect(0, 0, 120, 512);
-
-                    let maxValue = Number.NEGATIVE_INFINITY;
-                    let minValue = Number.POSITIVE_INFINITY;
-                    for (let spectrum of spectrogramBuilder.getSpectra()) {
-                        for (let element of spectrum) {
-                            if (element > maxValue) maxValue = element;
-                            if (element < minValue) minValue = element;
-                        }
-                    }
-                    for (let s = 0; s < spectrogramBuilder.getSpectra().length; s++) {
-                        const spectrum = spectrogramBuilder.getSpectra()[s];
-                        for (let i = 0; i < spectrum.length; i++) {
-                            let element = spectrum[i];
-                            const colorScore = parseInt(255 * ((element - minValue) / (maxValue - minValue + 1E-4)));
-                            const dilation = 2;
-                            ctx.fillStyle = `rgb(${colorScore}, ${colorScore}, ${colorScore})`;
-                            ctx.fillRect(dilation * s, dilation * i, dilation, dilation);
-                        }
-                    }
-                }, 0);
+                GraphingUtil.plotSpectrogram(spectrogramCanvas, spectrogramBuilder.getSpectra());
             }
         }
     };
@@ -72,9 +47,7 @@ recordButton.addEventListener("click", () => {
         source = audioContext.createMediaStreamSource(stream);
         source.connect(analyzer);
         // Start the animation frame that regularly updates the data
-        setTimeout(() => {
-            frameFunction();
-        }, 1000)
+        setTimeout(frameFunction, 1000)
     });
 });
 
@@ -88,36 +61,3 @@ buildSpectrogramButton.addEventListener("click", () => {
     if (recordButton.innerHTML == `Start analyzing mic audio`) recordButton.click();
     doBuildSpectrum = true;
 });
-
-// Test out the database stuff
-(async () => {
-
-    console.log(`Running database test`);
-
-    const database = new Database({ databaseName: "turtleDatabase", objectStoreName: "turtleStoreName" });
-
-    // Wait a little bit
-    await new Promise((resolve, reject) => { setTimeout(resolve, 1000); });
-
-    console.log(`Does the database have key turtleKey? The answer is ${await database.hasKey("turtleKey")}`);
-
-    database.write({ key: "turtleKey", value: "turtleValue" });
-    
-    // Wait a little bit
-    await new Promise((resolve, reject) => { setTimeout(resolve, 250); });
-
-    console.log(`Does the database have key turtleKey? The answer is ${await database.hasKey("turtleKey")}`);
-
-    console.log(`Read this from the database:`);
-    console.log(await database.read("turtleKey"));
-
-    database.delete("turtleKey");
-
-    // Wait a little bit
-    await new Promise((resolve, reject) => { setTimeout(resolve, 250); });
-
-    console.log(`Does the database have key turtleKey? The answer is ${await database.hasKey("turtleKey")}`);
-
-    console.log(`Done with the database test`);
-
-})();
