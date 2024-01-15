@@ -1,4 +1,16 @@
-
+/**
+ * This class helps in writing more readable Javascript by allowing methods of other classes
+ * to be called with an object that carries all input arguments as values of key value pairs.
+ * This provides the opportunity to explicitly name every argument passed to the method.
+ * Furthermore, this class supports (and indeed requires) some amount of input validation that
+ * occurs through the help of a "maximalTemplate" and a "minimalTemplate". The maximalTemplate
+ * has keys which are the set of all allowed arguments for the function (i.e. an input object
+ * is not allowed to have keys that are not also keys in the maximalTemplate). The 
+ * maximalTemplate also has values which are defaults in case the passed in object doesn't
+ * specify a value for any key. The minimalTemplate has a set of keys which each must be
+ * present in the passed in argument. If any of these requirements are not met, a descriptive
+ * error is thrown.
+ */
 class ConfigUtil {
 
     static validateConfiguration(args) {
@@ -9,8 +21,8 @@ class ConfigUtil {
             throw new Error(`validateConfiguration must be given an input object that has a configToValidate property. However, the input argument had no such property.`)
         }
 
-        for (let key of Object.key(args.configToValidate)) {
-            if (!maximalTemplate.hasOwnProperty(key)) {
+        for (let key of Object.keys(args.configToValidate)) {
+            if (!args.maximalTemplate.hasOwnProperty(key)) {
                 throw new Error(`Passed in config has unrecognized property ${key}`);
             }
         }
@@ -28,15 +40,25 @@ class ConfigUtil {
         // Copy over defaults from maximal template
         for (let key of Object.keys(args.maximalTemplate)) {
             if (!args.configToValidate.hasOwnProperty(key)) {
-                configToValidate.key = args.maximalTemplate.key;
+                args.configToValidate.key = args.maximalTemplate.key;
             }
         }
 
-        return configToValidate;
+        return args.configToValidate;
     }
 
 }
 
+/**
+ * This class abstracts away the logic of "debounce" from an application. Debounce is a process
+ * of filtering a noisy signal so that the internal state of the debouncer only changes values
+ * once attempt to set its internal state have stabilized on a consistent value for some time.
+ * If, for instance, some code logic flips a logical flag very sporadically, this debouncer
+ * class can provide a more stable flag that only changes state when the sporadic setting code
+ * has not attempted a flip within the last X milliseconds, where X is configurable on the 
+ * debouncer. This class supports polling the stabilized value of the debouncer as well as 
+ * configuring a listener to fire once the stabilized value changes.
+ */
 class Debouncer {
 
     static MAXIMAL_TEMPLATE = {
@@ -48,32 +70,80 @@ class Debouncer {
         debouncePeriodMs: null
     }
 
+    #candidateInternalState = null;
     #internalState = null;
     #config = 0;
-    #onStateChange = null;
+    #onStateChangeListeners = {};
+    #stateChangeTimeout = null;
 
     constructor(args) {
         ConfigUtil.validateConfiguration({minimalTemplate: Debouncer.MINIMAL_TEMPLATE,
             maximalTemplate: Debouncer.MAXIMAL_TEMPLATE,
             configToValidate: args});
-        this.#config = args.configToValidate;
+        this.#config = args;
     }
 
-    setState() {
+    setState(value) {
+        if (value != this.#candidateInternalState) {
+            this.#candidateInternalState = value;
+            clearTimeout(this.#stateChangeTimeout);
+            this.#stateChangeTimeout = setTimeout(() => {
+                this.#internalState = value;
+                for (let callback of Object.values(this.#onStateChangeListeners)) {
+                    callback(value);
+                }
+            }, this.#config.debouncePeriodMs);
+        }
+    }
 
+    forceState(value) {
+        this.#internalState = value;
     }
 
     getState() {
-
+        return this.#internalState;
     }
 
-    // TODO consider supporting an arbitrary number of callbacks, where this method returns a key
-    // referring to this callback and where you've added another method that removes callbacks which
-    // takes in the key and can remove the specific callback if needed
-    onStateChange(callback) {
-        this.#onStateChange = callback;
+    addOnStateChangeListener(callback) {
+        let maxKey = -1;
+        for (let key of Object.keys(this.#onStateChangeListeners)) {
+            if (key > maxKey) maxKey = key;
+        }
+        const newKey = maxKey + 1;
+        this.#onStateChangeListeners.newKey = callback;
+        return newKey;
+    }
+
+    removeOnStateChangeListener(key) {
+        if (this.#onStateChangeListeners.hasOwnProperty(key)) {
+            delete this.#onStateChangeListeners.key;
+        }
+    }
+
+    /**
+     * This method doesn't check any assertions but prints a periodic sequence of logs that
+     * should reveal the debounce working correctly. Specifically, it calls setState with 
+     * alternating arguments of true and false (the alternation does not happen on each request,
+     * as this would prevent the state from ever changing, but rather it calls a large cluster
+     * of setState(true) calls before switching to setState(false) and vice versa). The expected
+     * behavior is that you see the state resist changing until the debouncePeriodMs has expired,
+     * after which you get a single call to the change listener and a flip in the value returned
+     * by getState().
+     */
+    test() {
+        const debouncer = new Debouncer({debouncePeriodMs: 1000});
+        debouncer.forceState(false);
+        debouncer.addOnStateChangeListener((state) => {
+            console.log(`State changed listener called with state ${state}`);   
+        });
+        let setCallCount = 0;
+        setInterval(() => {
+            setCallCount++;
+            debouncer.setState(setCallCount % 12 > 5);
+            console.log(`Called debouncer.setState(${setCallCount %12 > 5}) and getState() returns ${debouncer.getState()}`);
+        }, 250);
     }
 
 }
 
-export { ConfigUtil }
+export { ConfigUtil, Debouncer }
