@@ -8,6 +8,11 @@
                 height: 400px;
                 border: 2px solid #000;
             }
+            #spectrogramCanvas {
+                width: 60px;
+                height: 512px;
+                border: 2px solid #900;
+            }
         </style>
     </head>
     <body>
@@ -15,9 +20,13 @@
         <label>Max power observed (dB): </label><div id="statsDiv"></div><br/>
         <label>Debouncer state: </label><div id="debouncerDiv"></div><br/>
         <button id="recordButton">Start analyzing mic audio</button></br>
+        <button id="buildSpectrogramButton">Build spectrogram</button></br>
         <svg id="graph" viewBox="0 0 100 100">
 
         </svg>
+        <canvas id="spectrogramCanvas" width="60" height="512">
+
+        </canvas>
         <script type="module" src="./util.js"></script>
         <script type="module" src="./main.js"></script>
     </body>
