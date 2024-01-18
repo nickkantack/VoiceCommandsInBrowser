@@ -3,6 +3,7 @@ import { Debouncer } from "./util.js";
 import { GraphingUtil } from "./graphing.js";
 import { SpectrogramBuilder } from "./spectrogramBuilder.js";
 import { Database } from "./database.js";
+import { Constants } from "./constants.js";
 
 let audioContext;
 let source;
@@ -13,11 +14,11 @@ recordButton.addEventListener("click", () => {
     if (isRecordButtonPressed) {
         isRecordButtonPressed = false;
         cancelAnimationFrame(animationFrame);
-        recordButton.innerHTML = `Start analyzing mic audio`;
+        recordButton.innerHTML = Constants.START_RECORDING_MIC_AUDIO;
         statsDiv.innerHTML = "";
         return;
     }
-    recordButton.innerHTML = `Stop analyzing mic audio`;
+    recordButton.innerHTML = Constants.STOP_RECORDING_MIC_AUDIO;
     isRecordButtonPressed = true;
 
     // Lots inspired by https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
@@ -58,6 +59,11 @@ const spectrogramBuilder = new SpectrogramBuilder({
  });
 buildSpectrogramButton.addEventListener("click", () => {
     if (spectrogramBuilder.isFull()) spectrogramBuilder.reset();
-    if (recordButton.innerHTML == `Start analyzing mic audio`) recordButton.click();
+    if (recordButton.innerHTML === Constants.START_RECORDING_MIC_AUDIO) recordButton.click();
     doBuildSpectrum = true;
+    // Make the recording stop once the spectrogram collection is finished
+    const listenerKey = spectrogramBuilder.addOnFullListener(() => {
+        if (recordButton.innerHTML === Constants.STOP_RECORDING_MIC_AUDIO) recordButton.click();
+        spectrogramBuilder.removeOnFullListener(listenerKey);
+    });
 });

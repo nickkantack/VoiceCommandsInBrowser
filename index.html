@@ -27,7 +27,18 @@
         <canvas id="spectrogramCanvas" width="120" height="512">
 
         </canvas>
+        <div id="sampleCollectionDiv">
+            <template id="sampleDivTemplate">
+                <div>
+                    <span class="labelSpan"></span>
+                    <span class="countSpan"></span>
+                    <button class="collectButton">Record</button>
+                    <button class="clearLatestSampleButton">Clear latest</button>
+                </div>
+            </template>
+        </div>
         <script type="module" src="./util.js"></script>
+        <script type="module" src="./sampleCollection.js"></script>
         <script type="module" src="./main.js"></script>
     </body>
 </html>

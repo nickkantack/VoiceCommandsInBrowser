@@ -18,6 +18,7 @@ class SpectrogramBuilder {
     #spectra;
     #millisSinceEpochToPostNextSpectrum;
     #_isFull;
+    #onFullListeners = {};
 
     constructor(args) {
         ConfigUtil.validateConfiguration({
@@ -33,7 +34,10 @@ class SpectrogramBuilder {
         if (this.#_isFull || Date.now() < this.#millisSinceEpochToPostNextSpectrum) return;
         this.#millisSinceEpochToPostNextSpectrum = Date.now() + this.#config.millisBetweenConsecutiveSpectra;
         this.#spectra.push(spectrum);
-        if (this.#spectra.length >= this.#config.numberOfSpectra) this.#_isFull = true;
+        if (this.#spectra.length >= this.#config.numberOfSpectra) {
+            this.#_isFull = true;
+            for (let listener of Object.values(this.#onFullListeners)) listener();
+        }
     }
 
     getSpectra() {
@@ -48,6 +52,22 @@ class SpectrogramBuilder {
 
     isFull() {
         return this.#_isFull;
+    }
+
+    addOnFullListener(callback) {
+        let maxKey = -1;
+        for (let key of Object.keys(this.#onFullListeners)) {
+            if (key > maxKey) maxKey = key;
+        }
+        const newKey = maxKey + 1;
+        this.#onFullListeners.newKey = callback;
+        return newKey;
+    }
+
+    removeOnFullListener(key) {
+        if (this.#onFullListeners.hasOwnProperty(key)) {
+            delete this.#onFullListeners.key;
+        }
     }
 
 }
