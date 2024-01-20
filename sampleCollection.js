@@ -1,6 +1,8 @@
 
+import { Constants } from "./constants.js";
 import { Database } from "./database.js";
 import { LabelGenerator } from "./labelGenerator.js";
+import { spectrogramBuilder } from "./dynamicVariables.js";
 
 (async () => {
 
@@ -26,19 +28,25 @@ import { LabelGenerator } from "./labelGenerator.js";
             divInTable.querySelector(`.countSpan`).innerHTML = `${existingSampleCount} samples stored`;
 
             divInTable.querySelector(`.collectButton`).addEventListener("click", async () => {
+                console.log(`Collect button clicked`);
                 // Generate the next key
                 const existingSampleCount = await getExistingSampleCount(database, labelPrefix);
                 const nextKey = `${labelPrefix}${existingSampleCount}`;
 
                 // Collect a spectrogram and save the result in the database
                 const listener = spectrogramBuilder.addOnFullListener(() => {
+                    console.log(`Got this listener started`);
                     spectrogramBuilder.removeOnFullListener(listener);
                     database.write({ key: nextKey, value: spectrogramBuilder.getSpectra() });
+                    console.log(`database write initiated`);
+
+                    // Update the UI to reflect the new data saved
+                    getExistingSampleCount(database, labelPrefix).then((newExistingSampleCount) => {
+                        divInTable.querySelector(`.countSpan`).innerHTML = `${newExistingSampleCount} samples stored`;
+                    });
                 });
 
-                // Update the UI to reflect the new data saved
-                const newExistingSampleCount = await getExistingSampleCount(database, labelPrefix);
-                divInTable.querySelector(`.countSpan`).innerHTML = `${newExistingSampleCount} samples stored`;
+                if (recordButton.innerHTML === Constants.START_RECORDING_MIC_AUDIO) buildSpectrogramButton.click();
                 
             });
             divInTable.querySelector(`.clearLatestSampleButton`).addEventListener("click", async () => {

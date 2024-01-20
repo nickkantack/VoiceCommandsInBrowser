@@ -36,6 +36,7 @@ class SpectrogramBuilder {
         this.#spectra.push(spectrum);
         if (this.#spectra.length >= this.#config.numberOfSpectra) {
             this.#_isFull = true;
+            console.log(`Dispatching ${Object.keys(this.#onFullListeners).length} listeners`);
             for (let listener of Object.values(this.#onFullListeners)) listener();
         }
     }
@@ -60,7 +61,7 @@ class SpectrogramBuilder {
             if (key > maxKey) maxKey = key;
         }
         const newKey = maxKey + 1;
-        this.#onFullListeners.newKey = callback;
+        this.#onFullListeners[newKey] = callback;
         return newKey;
     }
 

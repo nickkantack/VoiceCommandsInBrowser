@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Voice Commands in Broswer UI</title>
+        <title>Voice Commands in Browser UI</title>
         <style>
             #graph {
                 width: 400px;
@@ -19,7 +19,7 @@
         This is the rendered web page.<br/>
         <label>Max power observed (dB): </label><div id="statsDiv"></div><br/>
         <label>Debouncer state: </label><div id="debouncerDiv"></div><br/>
-        <button id="recordButton">Start analyzing mic audio</button></br>
+        <button id="recordButton">Start recording mic audio</button></br>
         <button id="buildSpectrogramButton">Build spectrogram</button></br>
         <svg id="graph" viewBox="0 0 100 100">
 
@@ -38,6 +38,7 @@
             </template>
         </div>
         <script type="module" src="./util.js"></script>
+        <script type="module" src="./dynamicVariables.js"></script>
         <script type="module" src="./sampleCollection.js"></script>
         <script type="module" src="./main.js"></script>
     </body>

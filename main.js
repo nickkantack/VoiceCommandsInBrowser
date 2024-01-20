@@ -5,11 +5,14 @@ import { SpectrogramBuilder } from "./spectrogramBuilder.js";
 import { Database } from "./database.js";
 import { Constants } from "./constants.js";
 import { LabelGenerator } from "./labelGenerator.js";
+import { spectrogramBuilder } from "./dynamicVariables.js";
 
 let audioContext;
 let source;
 let animationFrame;
 let isRecordButtonPressed = false;
+let doBuildSpectrum = false;
+
 recordButton.addEventListener("click", () => {
 
     if (isRecordButtonPressed) {
@@ -53,11 +56,6 @@ recordButton.addEventListener("click", () => {
     });
 });
 
-let doBuildSpectrum = false;
-const spectrogramBuilder = new SpectrogramBuilder({ 
-    millisBetweenConsecutiveSpectra: 50,
-    numberOfSpectra: 60
- });
 buildSpectrogramButton.addEventListener("click", () => {
     if (spectrogramBuilder.isFull()) spectrogramBuilder.reset();
     if (recordButton.innerHTML === Constants.START_RECORDING_MIC_AUDIO) recordButton.click();
