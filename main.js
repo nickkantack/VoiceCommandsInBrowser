@@ -4,6 +4,7 @@ import { GraphingUtil } from "./graphing.js";
 import { SpectrogramBuilder } from "./spectrogramBuilder.js";
 import { Database } from "./database.js";
 import { Constants } from "./constants.js";
+import { LabelGenerator } from "./labelGenerator.js";
 
 let audioContext;
 let source;

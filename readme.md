@@ -7,15 +7,15 @@ The data for training and testing the model is stored in an IndexedDB database. 
 
 Each key in the database will follow this convention:
 ```
-c{collection_number}_l{label_code}_s{sample_number}_{property_string}
+c{collection_number}_l{label_code}_{property_string}_s{sample_number}
 ```
 * `{collection_number}` is an integer indicating to which collection this sample belongs.
 * `{label_code}` is a string that, when parsed, indicates which key words are present in the sample.
-* `{sample_number}` is an integer indicating which arbitrary index this particular sample has among other samples that belong to the same collection and have the same label and properties.
 * `{property_string}` is a string that, when parsed, indicates additional properties about the sample, like whether it is earmarked for training or for validation.
 
+* `{sample_number}` is an integer indicating which arbitrary index this particular sample has among other samples that belong to the same collection and have the same label and properties.
 An example key would be the following:
 ```
-c2_l0010_s3_t
+c2_l0010_t_s3
 ```
 This key indicates that is belongs to collection 2, the label is 0010 (could indicate there are 4 keyword categories and keyword 3 was preent while the other keywords were not), this is the 3rd sample, and this is a sample for training (vs. validation).

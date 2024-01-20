@@ -16,6 +16,7 @@ class Database {
     #config;
 
     #database;
+    #isLoadedPromise;
 
     constructor(args) {
         ConfigUtil.validateConfiguration({
@@ -24,6 +25,12 @@ class Database {
             configToValidate: args   
         });
         this.#config = args;
+
+        let isLoadedPromiseResolver;
+        this.#isLoadedPromise = new Promise((resolve, reject) => {
+            isLoadedPromiseResolver = resolve;
+        });
+
         console.log(`Making database open request`);
         const databaseOpenRequest = indexedDB.open(this.#config.databaseName);
         databaseOpenRequest.onerror = (error) => {
@@ -32,6 +39,7 @@ class Database {
         databaseOpenRequest.onsuccess = (event) => {
             this.#database = event.target.result;
             console.log(`Successfully opened database with name ${this.#config.databaseName}`);
+            isLoadedPromiseResolver();
         };
         databaseOpenRequest.onupgradeneeded = (event) => {
             this.#database = event.target.result;
@@ -44,6 +52,10 @@ class Database {
             // at the time of creation. If you don't, you'll need to create a transation object
             // fresh when you later want to write or reach from the objectStore.
         };
+    }
+
+    async waitForDatabaseToLoad() {
+        await this.#isLoadedPromise;
     }
 
     write(args) {
