@@ -16,14 +16,18 @@ class SpectrogramPreprocessor extends tf.layers.Layer {
         // is the tensor we want to process.
         let _input;
         if (Array.isArray(input)) {
-            console.log(input);
             _input = input[0];
         } else {
             _input = input;
         }
+
+        if (_input.shape.length !== 3) {
+            throw new Error(`${this.getClassName()} cannot process non-4D dimensional data. Got input of shape ${_input.shape}`);
+        }
+
         const { mean, variance } = tf.moments(_input);
         let standardDeviation = tf.sqrt(variance).add(1); // This 1 is technically 1 dB
-        return _input.sub(mean).div(standardDeviation).expandDims(2);
+        return _input.sub(mean).div(standardDeviation).expandDims(3);
     }
 
     getClassName() {

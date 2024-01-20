@@ -72,10 +72,41 @@ buildSpectrogramButton.addEventListener("click", () => {
 // Define a model for linear regression. The script tag makes `tf` available
 // as a global variable.
 const model = tf.sequential();
-model.add(new SpectrogramPreprocessor({inputShape: [60, 256]}));
-// model.add(tf.layers.Conv2D())
+model.add(new SpectrogramPreprocessor({ inputShape: [60, 256] }));
 
-// model.add(tf.layers.dense({units: 1, inputShape: [1]}));
+model.add(tf.layers.conv2d({ filters: 8, kernelSize: [3, 3], activation: "relu" }));
+model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+model.add(tf.layers.batchNormalization());
+model.add(tf.layers.dropout({ rate: 0.2 }));
+
+model.add(tf.layers.conv2d({ filters: 16, kernelSize: [3, 3], activation: "relu" }));
+model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+model.add(tf.layers.batchNormalization());
+model.add(tf.layers.dropout({ rate: 0.2 }));
+
+model.add(tf.layers.conv2d({ filters: 32, kernelSize: [3, 3], activation: "relu" }));
+model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+model.add(tf.layers.batchNormalization());
+model.add(tf.layers.dropout({ rate: 0.2 }));
+
+model.add(tf.layers.conv2d({ filters: 64, kernelSize: [3, 3], activation: "relu" }));
+model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+model.add(tf.layers.batchNormalization());
+model.add(tf.layers.dropout({ rate: 0.2 }));
+
+model.add(tf.layers.conv2d({ filters: 64, kernelSize: [1, 3], activation: "relu" }));
+model.add(tf.layers.maxPooling2d({ poolSize: [1, 2] }));
+model.add(tf.layers.batchNormalization());
+model.add(tf.layers.dropout({ rate: 0.2 }));
+
+model.add(tf.layers.conv2d({ filters: 64, kernelSize: [1, 4], activation: "relu" }));
+model.add(tf.layers.maxPooling2d({ poolSize: [1, 3] }));
+model.add(tf.layers.batchNormalization());
+model.add(tf.layers.dropout({ rate: 0.2 }));
+
+model.add(tf.layers.flatten());
+model.add(tf.layers.dense({ units: 128, activation: "tanh" }));
+model.add(tf.layers.dense({ units: 6, activation: "tanh" }));
 
 model.summary();
 
@@ -86,7 +117,10 @@ const randomInput = tf.randomNormal([1, 60, 256]);
 
 // new SpectrogramPreprocessor().apply(randomInput).print();
 
-model.predict(randomInput).print();
+const startTime = Date.now();
+model.predict(randomInput);
+const endTime = Date.now();
+console.log(`Did a forward pass in ${endTime - startTime} milliseconds`);
 
 /*
 // Generate some synthetic data for training.
