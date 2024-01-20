@@ -72,17 +72,21 @@ buildSpectrogramButton.addEventListener("click", () => {
 // Define a model for linear regression. The script tag makes `tf` available
 // as a global variable.
 const model = tf.sequential();
-model.add(new SpectrogramPreprocessor({inputShape: [256, 60]}));
-
-let x = tf.tensor([1, 2, 3]);
-x.print();
-x.sub(tf.mean(x)).print();
+model.add(new SpectrogramPreprocessor({inputShape: [60, 256]}));
+// model.add(tf.layers.Conv2D())
 
 // model.add(tf.layers.dense({units: 1, inputShape: [1]}));
 
-console.log(model.summary());
+model.summary();
 
-// model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
+model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
+
+const randomInput = tf.randomNormal([1, 60, 256]);
+// randomInput.print();
+
+// new SpectrogramPreprocessor().apply(randomInput).print();
+
+model.predict(randomInput).print();
 
 /*
 // Generate some synthetic data for training.
