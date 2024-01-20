@@ -104,16 +104,20 @@ class Database {
         });
     }
 
-    delete(key) {
-        const request = this.#database.transaction([this.#config.objectStoreName], "readwrite")
-            .objectStore(this.#config.objectStoreName)
-            .delete(key);
-        request.onerror = (event) => {
-            console.error(`Error calling Database.delete(): ${event}`);
-        };
-        request.onsuccess = (event) => {
-            console.log(`Successfully deleted entry with key ${key}. Remove this log line soon.`);
-        };
+    async delete(key) {
+        return await new Promise((resolve, reject) => {
+            const request = this.#database.transaction([this.#config.objectStoreName], "readwrite")
+                .objectStore(this.#config.objectStoreName)
+                .delete(key);
+            request.onerror = (event) => {
+                console.error(`Error calling Database.delete(): ${event}`);
+                reject(event);
+            };
+            request.onsuccess = (event) => {
+                resolve();
+                console.log(`Successfully deleted entry with key ${key}. Remove this log line soon.`);
+            };
+        });
     }
 
     async test() {

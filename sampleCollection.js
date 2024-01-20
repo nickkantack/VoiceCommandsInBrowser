@@ -27,6 +27,7 @@ import { spectrogramBuilder } from "./dynamicVariables.js";
             const existingSampleCount = await getExistingSampleCount(database, labelPrefix);
             divInTable.querySelector(`.countSpan`).innerHTML = `${existingSampleCount} samples stored`;
 
+            // Configure the listener for collecting a sample
             divInTable.querySelector(`.collectButton`).addEventListener("click", async () => {
                 console.log(`Collect button clicked`);
                 // Generate the next key
@@ -49,10 +50,22 @@ import { spectrogramBuilder } from "./dynamicVariables.js";
                 if (recordButton.innerHTML === Constants.START_RECORDING_MIC_AUDIO) buildSpectrogramButton.click();
                 
             });
+
+            // Configure the listener for deleting the last sample
             divInTable.querySelector(`.clearLatestSampleButton`).addEventListener("click", async () => {
-                // TODO find the last key for this labelPrefix in the database
-                // TODO delete the database entry
-                // TODO update the countSpan
+                // Find the last key for this labelPrefix in the database
+                getExistingSampleCount(database, labelPrefix).then((currentSampleCount) => {
+                    // Action is only needed if there is any sample saved under this labelPrefix
+                    if (currentSampleCount > 0) {
+                        // Once we have the key to delete, delete the database entry
+                        database.delete(`${labelPrefix}${currentSampleCount - 1}`).then(
+                            // Once the delete is finished, update the countSpan
+                            getExistingSampleCount(database, labelPrefix).then((newExistingSampleCount) => {
+                                divInTable.querySelector(`.countSpan`).innerHTML = `${newExistingSampleCount} samples stored`;
+                            })
+                        );
+                    }
+                });
             });
         }
     }
