@@ -7,7 +7,7 @@ import { spectrogramBuilder } from "./dynamicVariables.js";
 (async () => {
 
     const labelGenerator = new LabelGenerator({
-        keywords: ["LARS", "LPCS", "IAD", "CELL 1", "CELL 2", "NRT"]
+        keywords: ["LARS", "LPCS", "IAD", "CELL-1", "CELL-2", "NRT"]
     });
 
     // Instantiate a connection to the database
@@ -22,6 +22,7 @@ import { spectrogramBuilder } from "./dynamicVariables.js";
             sampleCollectionDiv.appendChild(divInTable);
             const labelPrefix = `c1_l${labelCode}_${propertyString}_s`;
             divInTable.querySelector(`.labelSpan`).innerHTML = labelPrefix;
+            divInTable.querySelector(`.scriptSpan`).innerHTML = `"${randomlyReorderWords(script)}"`;
 
             // Initialize the sample count in the UI
             const existingSampleCount = await getExistingSampleCount(database, labelPrefix);
@@ -85,4 +86,16 @@ async function getExistingSampleCount(database, labelPrefix) {
         }
     }
     return existingSampleCount;
+}
+
+function randomlyReorderWords(stringWithSpaceDelimitedWords) {
+    let words = stringWithSpaceDelimitedWords.split(" ");
+    let shuffledWords = "";
+    while (words.length > 0) {
+        if (shuffledWords !== "") shuffledWords += " ";
+        const randomIndex = parseInt(Math.random() * words.length);
+        shuffledWords += words[randomIndex];
+        words.splice(randomIndex, 1);
+    }
+    return shuffledWords;
 }
