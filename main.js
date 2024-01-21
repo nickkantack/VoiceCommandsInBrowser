@@ -72,9 +72,9 @@ buildSpectrogramButton.addEventListener("click", () => {
 // Define a model for linear regression. The script tag makes `tf` available
 // as a global variable.
 
-(async () => {
-    let model;
+let model;
 
+(async () => {
 
     try {
         model = await tf.loadLayersModel('indexeddb://my-model');
@@ -154,3 +154,23 @@ buildSpectrogramButton.addEventListener("click", () => {
     await model.save('indexeddb://my-model');
 
 })();
+
+trainModelButton.addEventListener("click", () => {
+
+    if (!model) {
+        console.warn(`Can't train a null model. No training started.`);
+        return;
+    }
+
+    // Load up the data
+    const inputs = tf.randomNormal([10, 60, 256]);
+    const labels = tf.randomNormal([10, 6]);
+
+    // Run the fit
+    const startTime = Date.now();
+    console.log(`Model training has started`);
+    model.fit(inputs, labels, { epochs: 10, batch_size: 2 }).then(() => {
+        console.log(`Model trained for ${inputs.shape[0]} samples and it tooks ${Date.now() - startTime} ms`);
+    });
+
+});
