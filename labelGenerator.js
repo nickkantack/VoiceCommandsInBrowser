@@ -5,8 +5,9 @@ class LabelGenerator {
 
     static MAXIMAL_TEMPLATE = {
         numberOfSamplesPerLabel: 5,
-        keywords: null,
-        nonKeyWords: null
+        maxLabelSum: 4,
+        keywords: [],
+        nonKeyWords: ["[RANDOM WORD]"]
     };
 
     static MINIMAL_TEMPLATE = {
@@ -21,8 +22,6 @@ class LabelGenerator {
             configToValidate: args
         });
         this.#config = args;
-        if (!args.keywords) this.#config.keywords = [];
-        if (!args.nonKeyWords) this.#config.nonKeyWords = ["[RANDOM WORD]"];
     }
 
     listLabelCodes() {
@@ -38,6 +37,8 @@ class LabelGenerator {
             return;
         }
         for (let i = 0; i <= 1; i++) {
+            // If we've exhausted the max allowed number of 1s in the label, then don't add another 1
+            if (i === 1 && this.#config.maxLabelSum !== null && currentLabel.split("").filter(x => x === "1").length === this.#config.maxLabelSum) continue;
             const improvedLabel = currentLabel + i;
             this.#recursivePopulateLabels(improvedLabel, labelList);
         }

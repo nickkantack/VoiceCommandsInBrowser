@@ -40,10 +40,9 @@ class ConfigUtil {
         // Copy over defaults from maximal template
         for (let key of Object.keys(args.maximalTemplate)) {
             if (!args.configToValidate.hasOwnProperty(key)) {
-                args.configToValidate.key = args.maximalTemplate.key;
+                args.configToValidate[key] = args.maximalTemplate[key];
             }
         }
-
         return args.configToValidate;
     }
 
