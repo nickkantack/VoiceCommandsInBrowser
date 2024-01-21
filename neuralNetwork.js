@@ -1,6 +1,8 @@
 
 class SpectrogramPreprocessor extends tf.layers.Layer {
 
+    static className = "SpectrogramPreprocessor";
+
     constructor(args) {
         super(args)
     }
@@ -34,6 +36,12 @@ class SpectrogramPreprocessor extends tf.layers.Layer {
         return "SpectrogramPreprocessor";
     }
 
+}
+
+tf.serialization.registerClass(SpectrogramPreprocessor);
+
+export function spectrogramPreprocessor() {
+    return new SpectrogramPreprocessor();
 }
 
 export { SpectrogramPreprocessor }
