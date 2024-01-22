@@ -216,7 +216,7 @@ trainModelButton.addEventListener("click", async () => {
 
     // Run the fit
     const startTime = Date.now();
-    model.fit(oneBigSpectrogramTrainingTensor, oneBigLabelTrainingTensor, { epochs: 10, batch_size: 1, shuffle: true }).then((result) => {
+    model.fit(oneBigSpectrogramTrainingTensor, oneBigLabelTrainingTensor, { epochs: 1, batch_size: 1, shuffle: true }).then((result) => {
         console.log(`Model trained for ${oneBigSpectrogramTrainingTensor.shape[0]} samples and it tooks ${Date.now() - startTime} ms`);
 
         // Print the history
