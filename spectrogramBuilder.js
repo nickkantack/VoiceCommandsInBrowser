@@ -67,7 +67,7 @@ class SpectrogramBuilder {
 
     removeOnFullListener(key) {
         if (this.#onFullListeners.hasOwnProperty(key)) {
-            delete this.#onFullListeners.key;
+            delete this.#onFullListeners[key];
         }
     }
 

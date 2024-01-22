@@ -4,7 +4,6 @@ import { ConfigUtil } from "./util.js";
 class LabelGenerator {
 
     static MAXIMAL_TEMPLATE = {
-        numberOfSamplesPerLabel: 5,
         maxLabelSum: 4,
         minLabelSum: 1,
         keywords: [],

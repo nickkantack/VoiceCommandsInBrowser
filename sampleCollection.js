@@ -40,6 +40,7 @@ let database;
                 // Collect a spectrogram and save the result in the database
                 const listener = spectrogramBuilder.addOnFullListener(() => {
                     console.log(`Got this listener started`);
+                    console.log(`Going to attempt to remove listener ${listener}`);
                     spectrogramBuilder.removeOnFullListener(listener);
                     database.write({ key: nextKey, value: spectrogramBuilder.getSpectra() });
                     console.log(`database write initiated`);
