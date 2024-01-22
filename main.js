@@ -120,7 +120,7 @@ let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "
 
         model.add(tf.layers.flatten());
         model.add(tf.layers.dense({ units: 128, activation: "tanh" }));
-        model.add(tf.layers.dense({ units: 6, activation: "tanh" }));
+        model.add(tf.layers.dense({ units: 4, activation: "tanh" }));
 
     }
 
@@ -194,27 +194,37 @@ trainModelButton.addEventListener("click", async () => {
     }
 
     // Create an array of randomized indices to allow us to shuffle the tensors collected before batching them
-    const randomIndicesOrder = Shuffler.getRandomIndicesListForLength(individualLabelTrainingTensors.length);
-    console.log(randomIndicesOrder);
+    // const randomIndicesOrder = Shuffler.getRandomIndicesListForLength(individualLabelTrainingTensors.length);
+    // console.log(randomIndicesOrder);
 
-    const batchSize = 8;
+    // Put all of the training data into a big tensor
+    let oneBigSpectrogramTrainingTensor = null;
+    let oneBigLabelTrainingTensor = null;
+    for (let i = 0; i < individualSpectrogramTrainingTensors.length; i++) {
+        if (!oneBigSpectrogramTrainingTensor) {
+            oneBigSpectrogramTrainingTensor = individualSpectrogramTrainingTensors[i];
+            oneBigLabelTrainingTensor = individualLabelTrainingTensors[i];
+        } else {
+            oneBigSpectrogramTrainingTensor = oneBigSpectrogramTrainingTensor.concat(individualSpectrogramTrainingTensors[i]);
+            oneBigLabelTrainingTensor = oneBigLabelTrainingTensor.concat(individualLabelTrainingTensors[i]);
+        }
+    }
+    console.log(`oneBigSpectrogramTrainingTensor has dimensions ${oneBigSpectrogramTrainingTensor.shape}`);
+    console.log(`oneBigLabelTrainingTensor has dimensions ${oneBigLabelTrainingTensor.shape}`);
 
-    // After the batches are created, then that same .then can do the training stuff below, or implement
-    // a custom (perhaps more verbose) training loop
-
-    // Load up the data
-    /*
-    const inputs = tf.randomNormal([10, 60, 256]);
-    const labels = tf.randomNormal([10, 6]);
+    // TODO do the same for the validation data
 
     // Run the fit
     const startTime = Date.now();
-    model.fit(inputs, labels, { epochs: 10, batch_size: 2 }).then(() => {
-        console.log(`Model trained for ${inputs.shape[0]} samples and it tooks ${Date.now() - startTime} ms`);
+    model.fit(oneBigSpectrogramTrainingTensor, oneBigLabelTrainingTensor, { epochs: 10, batch_size: 1, shuffle: true }).then((result) => {
+        console.log(`Model trained for ${oneBigSpectrogramTrainingTensor.shape[0]} samples and it tooks ${Date.now() - startTime} ms`);
 
-        // TODO save the model
+        // Print the history
+        console.log(result.history.loss);
+
+        // Save the model
+        model.save('indexeddb://my-model');
     });
-    */
 
    console.log(`Model training has started`);
 
