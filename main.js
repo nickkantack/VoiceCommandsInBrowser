@@ -76,9 +76,10 @@ buildSpectrogramButton.addEventListener("click", () => {
 let model;
 let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "KeywordSpectraStore" });
 
-(async () => {
+tf.setBackend('cpu').then(async () => {
 
     try {
+        // throw new Error(`Forcing model reinstantiation`);
         model = await tf.loadLayersModel('indexeddb://my-model');
         console.log(`Succeeded in loading model`);
     } catch (e) {
@@ -89,45 +90,44 @@ let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "
         model = tf.sequential();
         model.add(new SpectrogramPreprocessor({ inputShape: [60, 256] }));
 
-        model.add(tf.layers.conv2d({ filters: 8, kernelSize: [3, 3], activation: "relu" }));
-        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+        model.add(tf.layers.conv2d({ filters: 8, kernelSize: [3, 3] }));
         model.add(tf.layers.batchNormalization());
-        // model.add(tf.layers.dropout({ rate: 0.2 }));
-
-        model.add(tf.layers.conv2d({ filters: 16, kernelSize: [3, 3], activation: "relu" }));
-        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
-        model.add(tf.layers.batchNormalization());
-        // model.add(tf.layers.dropout({ rate: 0.2 }));
-
-        model.add(tf.layers.conv2d({ filters: 32, kernelSize: [3, 3], activation: "relu" }));
-        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
-        model.add(tf.layers.batchNormalization());
-        // model.add(tf.layers.dropout({ rate: 0.2 }));
-
-        model.add(tf.layers.conv2d({ filters: 64, kernelSize: [3, 3], activation: "relu" }));
-        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
-        model.add(tf.layers.batchNormalization());
-        // model.add(tf.layers.dropout({ rate: 0.2 }));
-
-        model.add(tf.layers.conv2d({ filters: 64, kernelSize: [1, 3], activation: "relu" }));
+        model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [1, 2] }));
-        model.add(tf.layers.batchNormalization());
-        // model.add(tf.layers.dropout({ rate: 0.2 }));
 
-        model.add(tf.layers.conv2d({ filters: 64, kernelSize: [1, 4], activation: "relu" }));
-        model.add(tf.layers.maxPooling2d({ poolSize: [1, 3] }));
+        model.add(tf.layers.conv2d({ filters: 12, kernelSize: [2, 3] }));
         model.add(tf.layers.batchNormalization());
-        // model.add(tf.layers.dropout({ rate: 0.2 }));
+        model.add(tf.layers.leakyReLU());
+        model.add(tf.layers.maxPooling2d({ poolSize: [1, 2] }));
+
+        model.add(tf.layers.conv2d({ filters: 16, kernelSize: [2, 3] }));
+        model.add(tf.layers.batchNormalization());
+        model.add(tf.layers.leakyReLU());
+        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+
+        model.add(tf.layers.conv2d({ filters: 20, kernelSize: [2, 3] }));
+        model.add(tf.layers.batchNormalization());
+        model.add(tf.layers.leakyReLU());
+        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+
+        model.add(tf.layers.conv2d({ filters: 26, kernelSize: [2, 3] }));
+        model.add(tf.layers.batchNormalization());
+        model.add(tf.layers.leakyReLU());
+        model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
+
+        // model.add(tf.layers.globalAveragePooling2d({ dataFormat: "channelsLast" }));
 
         model.add(tf.layers.flatten());
-        model.add(tf.layers.dense({ units: 128, activation: "tanh" }));
+        model.add(tf.layers.dense({ units: 36, activation: "relu" }));
         model.add(tf.layers.dense({ units: 4, activation: "sigmoid" }));
+
+        // model.add(tf.layers.activation({ activation: "sigmoid" }))
 
     }
 
     model.summary();
 
-    model.compile({loss: 'meanSquaredError', optimizer: 'sgd'});
+    model.compile({loss: 'meanSquaredError', optimizer: "adam" });
 
     const randomInput = tf.randomNormal([1, 60, 256]);
     // randomInput.print();
@@ -155,7 +155,7 @@ let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "
     // Save the model
     await model.save('indexeddb://my-model');
 
-})();
+});
 
 trainModelButton.addEventListener("click", async () => {
 
@@ -195,29 +195,42 @@ trainModelButton.addEventListener("click", async () => {
     }
 
     // Create an array of randomized indices to allow us to shuffle the tensors collected before batching them
-    // const randomIndicesOrder = Shuffler.getRandomIndicesListForLength(individualLabelTrainingTensors.length);
-    // console.log(randomIndicesOrder);
+    const randomIndicesOrder = Shuffler.getRandomIndicesListForLength(individualLabelTrainingTensors.length);
 
     // Put all of the training data into a big tensor
     let oneBigSpectrogramTrainingTensor = null;
     let oneBigLabelTrainingTensor = null;
     for (let i = 0; i < individualSpectrogramTrainingTensors.length; i++) {
         if (!oneBigSpectrogramTrainingTensor) {
-            oneBigSpectrogramTrainingTensor = individualSpectrogramTrainingTensors[i];
-            oneBigLabelTrainingTensor = individualLabelTrainingTensors[i];
+            oneBigSpectrogramTrainingTensor = individualSpectrogramTrainingTensors[randomIndicesOrder[i]];
+            oneBigLabelTrainingTensor = individualLabelTrainingTensors[randomIndicesOrder[i]];
         } else {
-            oneBigSpectrogramTrainingTensor = oneBigSpectrogramTrainingTensor.concat(individualSpectrogramTrainingTensors[i]);
-            oneBigLabelTrainingTensor = oneBigLabelTrainingTensor.concat(individualLabelTrainingTensors[i]);
+            oneBigSpectrogramTrainingTensor = oneBigSpectrogramTrainingTensor.concat(individualSpectrogramTrainingTensors[randomIndicesOrder[i]]);
+            oneBigLabelTrainingTensor = oneBigLabelTrainingTensor.concat(individualLabelTrainingTensors[randomIndicesOrder[i]]);
         }
     }
-    console.log(`oneBigSpectrogramTrainingTensor has dimensions ${oneBigSpectrogramTrainingTensor.shape}`);
-    console.log(`oneBigLabelTrainingTensor has dimensions ${oneBigLabelTrainingTensor.shape}`);
 
     // TODO do the same for the validation data
 
+    let runningAverageLoss = null;
+    const onBatchEnd = (batch, logs) => {
+        if (!runningAverageLoss) {
+            runningAverageLoss = logs.loss;
+        } else {
+            runningAverageLoss *= 0.9;
+            runningAverageLoss += 0.1 * logs.loss;
+        }
+        console.log(`Batch index is ${batch}. Running average loss is ${runningAverageLoss}`);
+    }
+
     // Run the fit
     const startTime = Date.now();
-    model.fit(oneBigSpectrogramTrainingTensor, oneBigLabelTrainingTensor, { epochs: 1, batch_size: 1, shuffle: true }).then((result) => {
+    model.fit(oneBigSpectrogramTrainingTensor, oneBigLabelTrainingTensor, { 
+        epochs: 10, 
+        batchSize: 4, 
+        shuffle: true,
+        callbacks: { onBatchEnd } 
+    }).then((result) => {
         console.log(`Model trained for ${oneBigSpectrogramTrainingTensor.shape[0]} samples and it tooks ${Date.now() - startTime} ms`);
 
         // Print the history

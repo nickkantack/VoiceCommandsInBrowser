@@ -38,7 +38,8 @@ class SpectrogramPreprocessor extends tf.layers.Layer {
 
         const { mean, variance } = tf.moments(_input);
         let standardDeviation = tf.sqrt(variance).add(1); // This 1 is technically 1 dB
-        return _input.sub(mean).div(standardDeviation).expandDims(3);
+        const result = _input.sub(mean).div(standardDeviation).expandDims(3);
+        return result;
     }
 
     getClassName() {

@@ -14,7 +14,18 @@
                 border: 2px solid #900;
             }
         </style>
-        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+        <!-- Adds the WASM backend to the global backend registry -->
+        <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+        
+        <!--
+        <script>
+            tf.ENV.registerFlag('HAS_WEBGL', '1');
+            tf.ENV.registerFlag('WEBGL_VERSION', '1');
+            tf.ENV.backend = 'webgl';
+            tf.setBackend('webgl');    
+        </script>
+        -->
     </head>
     <body>
         This is the rendered web page.<br/>
