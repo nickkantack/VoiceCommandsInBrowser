@@ -6,6 +6,7 @@ class LabelGenerator {
     static MAXIMAL_TEMPLATE = {
         numberOfSamplesPerLabel: 5,
         maxLabelSum: 4,
+        minLabelSum: 1,
         keywords: [],
         nonKeyWords: ["[RANDOM WORD]"]
     };
@@ -33,6 +34,8 @@ class LabelGenerator {
 
     #recursivePopulateLabels(currentLabel, labelList) {
         if (currentLabel.length === this.#config.keywords.length) {
+            // Don't add the label if it would violate the min label sum requirement
+            if (this.#config.minLabelSum !== null && currentLabel.split("").filter(x => x === "1").length < this.#config.minLabelSum) return;
             labelList.push(currentLabel);
             return;
         }

@@ -145,4 +145,22 @@ class Debouncer {
 
 }
 
-export { ConfigUtil, Debouncer }
+class Shuffler {
+    
+    static getRandomIndicesListForLength(length) {
+        let unshuffledIndices = [];
+        for (let i = 0; i < length; i++) {
+            unshuffledIndices.push(i);
+        }
+        let shuffledIndices = [];
+        while (unshuffledIndices.length > 0) {
+            const randomIndex = parseInt(Math.random() * unshuffledIndices.length);
+            shuffledIndices.push(unshuffledIndices[randomIndex]);
+            unshuffledIndices.splice(randomIndex, 1);
+        }
+        return shuffledIndices;
+    }
+    
+}
+
+export { ConfigUtil, Debouncer, Shuffler }

@@ -4,14 +4,16 @@ import { Database } from "./database.js";
 import { LabelGenerator } from "./labelGenerator.js";
 import { spectrogramBuilder } from "./dynamicVariables.js";
 
+let database;
+
 (async () => {
 
     const labelGenerator = new LabelGenerator({
-        keywords: ["LARS", "LPCS", "IAD", "CELL-1", "CELL-2", "NRT"]
+        keywords: ["LARS", "LPCS", "IAD", "NRT"]
     });
 
     // Instantiate a connection to the database
-    const database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "KeywordSpectraStore" });
+    database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "KeywordSpectraStore" });
     await database.waitForDatabaseToLoad();
 
     // Generate label codes and script, and create a row in the table for each.

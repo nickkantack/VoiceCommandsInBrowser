@@ -1,5 +1,5 @@
 
-import { Debouncer } from "./util.js";
+import { Debouncer, Shuffler } from "./util.js";
 import { GraphingUtil } from "./graphing.js";
 import { SpectrogramBuilder } from "./spectrogramBuilder.js";
 import { Database } from "./database.js";
@@ -73,6 +73,7 @@ buildSpectrogramButton.addEventListener("click", () => {
 // as a global variable.
 
 let model;
+let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "KeywordSpectraStore" });
 
 (async () => {
 
@@ -155,22 +156,66 @@ let model;
 
 })();
 
-trainModelButton.addEventListener("click", () => {
+trainModelButton.addEventListener("click", async () => {
 
     if (!model) {
         console.warn(`Can't train a null model. No training started.`);
         return;
     }
 
+    if (!database) {
+        console.warn(`Unable to train since the database object is null`);
+        return;
+    }
+
+    const individualSpectrogramTrainingTensors = [];
+    const individualLabelTrainingTensors = [];
+    const individualSpectrogramValidationTensors = [];
+    const individualLabelValidationTensors = [];
+
+    for (let labelSpan of sampleCollectionDiv.querySelectorAll(`.labelSpan`)) {
+        const labelPrefix = labelSpan.innerHTML;
+        for (let i = 0; i < 100; i++) {
+            const databaseKey = `${labelPrefix}${i}`;
+            if (await database.hasKey(databaseKey)) {
+                const inputTensor = tf.tensor(await database.read(databaseKey)).expandDims(0);
+                const labelArray = /l([01]+)/.exec(labelPrefix)[1].split("").map(x => parseInt(x));
+                const labelTensor = tf.tensor(labelArray).expandDims(0);
+
+                if (/t/.test(labelPrefix)) {
+                    individualSpectrogramTrainingTensors.push(inputTensor);
+                    individualLabelTrainingTensors.push(labelTensor);
+                } else {
+                    individualSpectrogramValidationTensors.push(inputTensor);
+                    individualLabelValidationTensors.push(labelTensor);
+                }
+            }
+        }
+    }
+
+    // Create an array of randomized indices to allow us to shuffle the tensors collected before batching them
+    const randomIndicesOrder = Shuffler.getRandomIndicesListForLength(individualLabelTrainingTensors.length);
+    console.log(randomIndicesOrder);
+
+    const batchSize = 8;
+
+    // After the batches are created, then that same .then can do the training stuff below, or implement
+    // a custom (perhaps more verbose) training loop
+
     // Load up the data
+    /*
     const inputs = tf.randomNormal([10, 60, 256]);
     const labels = tf.randomNormal([10, 6]);
 
     // Run the fit
     const startTime = Date.now();
-    console.log(`Model training has started`);
     model.fit(inputs, labels, { epochs: 10, batch_size: 2 }).then(() => {
         console.log(`Model trained for ${inputs.shape[0]} samples and it tooks ${Date.now() - startTime} ms`);
+
+        // TODO save the model
     });
+    */
+
+   console.log(`Model training has started`);
 
 });
