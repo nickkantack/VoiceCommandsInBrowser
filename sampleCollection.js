@@ -5,10 +5,11 @@ import { LabelGenerator } from "./labelGenerator.js";
 import { spectrogramBuilder } from "./dynamicVariables.js";
 
 let database;
+let labelGenerator;
 
 (async () => {
 
-    const labelGenerator = new LabelGenerator({
+    labelGenerator = new LabelGenerator({
         keywords: ["LARS", "LPCS", "IAD", "NRT"]
     });
 
@@ -102,3 +103,5 @@ function randomlyReorderWords(stringWithSpaceDelimitedWords) {
     }
     return shuffledWords;
 }
+
+export { labelGenerator }

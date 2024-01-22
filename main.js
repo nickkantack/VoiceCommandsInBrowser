@@ -7,6 +7,7 @@ import { Constants } from "./constants.js";
 import { LabelGenerator } from "./labelGenerator.js";
 import { spectrogramBuilder } from "./dynamicVariables.js";
 import { SpectrogramPreprocessor } from "./neuralNetwork.js";
+import { labelGenerator } from "./sampleCollection.js";
 
 let audioContext;
 let source;
@@ -227,5 +228,43 @@ trainModelButton.addEventListener("click", async () => {
     });
 
    console.log(`Model training has started`);
+
+});
+
+analyzeSpectrogramButton.addEventListener("click", () => {
+    
+    if (!model) {
+        console.warn("Unable to analyze spectrogram because the model object is null.");
+        return;
+    }
+
+    if (!spectrogramBuilder) {
+        console.warn(`Unable to analyze spectrogram because the spectrogramBuilder is null`);
+        return;
+    }
+
+    if (!spectrogramBuilder.isFull()) {
+        console.warn(`Unable to analyze spectrogram because the spectrogramBuilder is not full`);
+        return;
+    }
+
+    const inputTensor = tf.tensor(spectrogramBuilder.getSpectra()).expandDims(0);
+    const outputTensor = model.predict(inputTensor);
+    outputTensor.print();
+
+    outputTensor.array().then((result) => {
+        console.log(result);
+        // TODO create a label code and use the labelGenerator to produce a script
+        const predictedLabelsAsArray = result[0].map(x => Math.round(x));
+        console.log(predictedLabelsAsArray);
+        const labelString = predictedLabelsAsArray.join("");
+        console.log(labelString);
+
+        console.log(labelGenerator.labelCodeToScript(labelString));
+
+    });
+    
+
+    console.log(`Done producing prediction`);
 
 });
