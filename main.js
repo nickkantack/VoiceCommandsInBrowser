@@ -92,36 +92,36 @@ let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "
         model.add(tf.layers.conv2d({ filters: 8, kernelSize: [3, 3], activation: "relu" }));
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
         model.add(tf.layers.batchNormalization());
-        model.add(tf.layers.dropout({ rate: 0.2 }));
+        // model.add(tf.layers.dropout({ rate: 0.2 }));
 
         model.add(tf.layers.conv2d({ filters: 16, kernelSize: [3, 3], activation: "relu" }));
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
         model.add(tf.layers.batchNormalization());
-        model.add(tf.layers.dropout({ rate: 0.2 }));
+        // model.add(tf.layers.dropout({ rate: 0.2 }));
 
         model.add(tf.layers.conv2d({ filters: 32, kernelSize: [3, 3], activation: "relu" }));
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
         model.add(tf.layers.batchNormalization());
-        model.add(tf.layers.dropout({ rate: 0.2 }));
+        // model.add(tf.layers.dropout({ rate: 0.2 }));
 
         model.add(tf.layers.conv2d({ filters: 64, kernelSize: [3, 3], activation: "relu" }));
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
         model.add(tf.layers.batchNormalization());
-        model.add(tf.layers.dropout({ rate: 0.2 }));
+        // model.add(tf.layers.dropout({ rate: 0.2 }));
 
         model.add(tf.layers.conv2d({ filters: 64, kernelSize: [1, 3], activation: "relu" }));
         model.add(tf.layers.maxPooling2d({ poolSize: [1, 2] }));
         model.add(tf.layers.batchNormalization());
-        model.add(tf.layers.dropout({ rate: 0.2 }));
+        // model.add(tf.layers.dropout({ rate: 0.2 }));
 
         model.add(tf.layers.conv2d({ filters: 64, kernelSize: [1, 4], activation: "relu" }));
         model.add(tf.layers.maxPooling2d({ poolSize: [1, 3] }));
         model.add(tf.layers.batchNormalization());
-        model.add(tf.layers.dropout({ rate: 0.2 }));
+        // model.add(tf.layers.dropout({ rate: 0.2 }));
 
         model.add(tf.layers.flatten());
         model.add(tf.layers.dense({ units: 128, activation: "tanh" }));
-        model.add(tf.layers.dense({ units: 4, activation: "tanh" }));
+        model.add(tf.layers.dense({ units: 4, activation: "sigmoid" }));
 
     }
 
