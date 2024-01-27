@@ -79,7 +79,7 @@ let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "
 tf.setBackend('cpu').then(async () => {
 
     try {
-        // throw new Error(`Forcing model reinstantiation`);
+        throw new Error(`Forcing model reinstantiation`);
         model = await tf.loadLayersModel('indexeddb://my-model');
         console.log(`Succeeded in loading model`);
     } catch (e) {
@@ -110,7 +110,7 @@ tf.setBackend('cpu').then(async () => {
         model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
 
-        model.add(tf.layers.conv2d({ filters: 26, kernelSize: [2, 3] }));
+        model.add(tf.layers.conv2d({ filters: 4, kernelSize: [2, 3] }));
         model.add(tf.layers.batchNormalization());
         model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
@@ -127,7 +127,7 @@ tf.setBackend('cpu').then(async () => {
 
     model.summary();
 
-    model.compile({loss: 'meanSquaredError', optimizer: "adam" });
+    model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(1) });
 
     const randomInput = tf.randomNormal([1, 60, 256]);
     // randomInput.print();
@@ -226,7 +226,7 @@ trainModelButton.addEventListener("click", async () => {
     // Run the fit
     const startTime = Date.now();
     model.fit(oneBigSpectrogramTrainingTensor, oneBigLabelTrainingTensor, { 
-        epochs: 10, 
+        epochs: 6, 
         batchSize: 4, 
         shuffle: true,
         callbacks: { onBatchEnd } 
