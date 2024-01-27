@@ -281,3 +281,45 @@ analyzeSpectrogramButton.addEventListener("click", () => {
     console.log(`Done producing prediction`);
 
 });
+
+exportDataButton.addEventListener("click", async () => {
+
+    // verify non-null labelGenerator and database
+    if (!labelGenerator) {
+        console.error("Cannot export data when the labelGenerator is null");
+        return;
+    }
+
+    if (!database) {
+        console.error("Cannot export data when the database is null");
+        return;
+    }
+
+    let stringToWriteToFile = "";
+
+    // iterate through all label codes and count up how many samples are saved for each
+    for (let div of sampleCollectionDiv.querySelectorAll(`div`)) {
+        const labelPrefix = div.querySelector(`.labelSpan`).innerHTML;
+        const totalSampleCount = parseInt(div.querySelector(`.countSpan`).innerHTML);
+        for (let i = 0; i < totalSampleCount; i++) {
+            const key = `${labelPrefix}${i}`;
+            const spectraData = await database.read(key);
+            const resultObject = {label: key, data: spectraData};
+            const resultJson = JSON.stringify(resultObject);
+            if (stringToWriteToFile.length > 0) stringToWriteToFile += "\n";
+            stringToWriteToFile += resultJson;
+        }
+    }
+
+    console.log(`The size of the string I'd write to the file is ${stringToWriteToFile.length / 32 / 1E6} MB.`);
+
+    // Make the aggregate string downloadable as a file and trigger download
+    // https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(stringToWriteToFile));
+    element.setAttribute('download', 'spectraData.txt');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+});
