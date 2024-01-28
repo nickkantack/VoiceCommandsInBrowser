@@ -5,8 +5,8 @@ import tensorflow as tf
 import keras
 from pprint import pprint
 
-LOAD_MODEL = False
-TRAIN_MODEL = True
+LOAD_MODEL = True
+TRAIN_MODEL = False
 
 @keras.saving.register_keras_serializable('my_package')
 class Preprocessor(tf.keras.layers.Layer):
@@ -143,12 +143,14 @@ def main():
                             validation_data=test_dataset)
         model.save("model.keras")
 
+
         plt.plot(history.history["loss"], label="training_loss")
         plt.plot(history.history["val_loss"], label="validation_loss")
         plt.legend()
         plt.show()
 
     # inspect_intermediate_layer(model, validation_inputs, index_of_layer_to_inspect=18)
+    # model.save("model_for_browser_conversion")
 
     print("Done")
 
