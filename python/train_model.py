@@ -3,6 +3,7 @@ import json
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import keras
+from pprint import pprint
 
 class Preprocessor(tf.keras.layers.Layer):
 
@@ -17,7 +18,7 @@ class Preprocessor(tf.keras.layers.Layer):
   def call(self, inputs):
     mean, var = tf.nn.moments(inputs, [1, 2], keepdims=True)
     minimum = tf.math.reduce_min(inputs, [1, 2], keepdims=True)
-    result = tf.divide(tf.subtract(inputs, minimum), tf.sqrt(var))
+    result = tf.divide(tf.subtract(inputs, minimum + tf.sqrt(var)), 3 * tf.sqrt(var))
     return result
 
 
@@ -91,40 +92,45 @@ def main():
         # tf.keras.layers.Normalization(input_shape=(60, 256, 1)),
 
         tf.keras.layers.Conv2D(8, (3, 3)),
-        tf.keras.layers.BatchNormalization(),
         tf.keras.layers.LeakyReLU(),
-        tf.keras.layers.MaxPooling2D((1, 2)),
-
-        tf.keras.layers.Conv2D(12, (2, 3)),
         tf.keras.layers.BatchNormalization(),
-        tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((1, 2)),
 
         tf.keras.layers.Conv2D(16, (2, 3)),
-        tf.keras.layers.BatchNormalization(),
         tf.keras.layers.LeakyReLU(),
-        tf.keras.layers.MaxPooling2D((2, 2)),
+        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.MaxPooling2D((1, 2)),
 
-        tf.keras.layers.Conv2D(20, (2, 3)),
-        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Conv2D(32, (2, 3)),
         tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((2, 2)),
+        # tf.keras.layers.BatchNormalization(),
 
-        tf.keras.layers.Conv2D(24, (2, 3)),
-        tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.Conv2D(64, (2, 3)),
         tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((2, 2)),
+        # tf.keras.layers.BatchNormalization(),
+
+        tf.keras.layers.Conv2D(64, (2, 3)),
+        tf.keras.layers.LeakyReLU(),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        # tf.keras.layers.BatchNormalization(),
 
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(36, activation='relu'),
+        tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dense(4, activation='sigmoid'),
     ])
 
     model.build(input_shape=(1, 60, 256, 1))
 
+    # Make the intermediate model for looking at activations
+    inspect_intermediate_layer(model, training_inputs, index_of_layer_to_inspect=5)
+
+    return
+
     model.summary()
 
-    model.compile(optimizer=tf.keras.optimizers.legacy.RMSprop(),
+    model.compile(optimizer=tf.keras.optimizers.legacy.RMSprop(learning_rate=1E-3),
                 loss=tf.keras.losses.MeanSquaredError(),
                 metrics=['mean_squared_error'])
 
@@ -141,5 +147,24 @@ def main():
     print("Done")
 
 
+def inspect_intermediate_layer(model, training_inputs, index_of_layer_to_inspect):
+
+    index_of_layer_to_inspect = 5
+    XX = model.input 
+    YY = model.layers[index_of_layer_to_inspect].output
+    # pprint(vars(model.layers[0])) # Prints attributes of the layer to help identify it
+    print(model.layers[index_of_layer_to_inspect]._initial_weights) # Shows a weights tensor shape to help identify the layer
+    new_model = tf.keras.models.Model(XX, YY)
+
+    Xresult = new_model.predict(training_inputs[:2])
+
+    print(Xresult.shape)
+    _, axes = plt.subplots(8)
+    for i in range(8):
+        axes[i].imshow(Xresult[0, :, :, i])
+    plt.show()
+    
+
 if __name__ == "__main__":
     main()
+
