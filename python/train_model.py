@@ -5,6 +5,10 @@ import tensorflow as tf
 import keras
 from pprint import pprint
 
+LOAD_MODEL = True
+TRAIN_MODEL = False
+
+@keras.saving.register_keras_serializable('my_package')
 class Preprocessor(tf.keras.layers.Layer):
 
   def __init__(self):
@@ -121,12 +125,14 @@ def main():
         tf.keras.layers.Dense(4, activation='sigmoid'),
     ])
 
+    if LOAD_MODEL:
+        print("Scrapping newly initialized model for a saved one")
+        model = tf.keras.models.load_model("model.keras")
+
     model.build(input_shape=(1, 60, 256, 1))
 
     # Make the intermediate model for looking at activations
     inspect_intermediate_layer(model, training_inputs, index_of_layer_to_inspect=5)
-
-    return
 
     model.summary()
 
@@ -134,14 +140,15 @@ def main():
                 loss=tf.keras.losses.MeanSquaredError(),
                 metrics=['mean_squared_error'])
 
-    # train the model
-    history = model.fit(train_dataset, epochs=20, 
-                        validation_data=test_dataset)
+    if TRAIN_MODEL:
+        history = model.fit(train_dataset, epochs=20, 
+                            validation_data=test_dataset)
+        model.save("model.keras")
 
-    plt.plot(history.history["loss"], label="training_loss")
-    plt.plot(history.history["val_loss"], label="validation_loss")
-    plt.legend()
-    plt.show()
+        plt.plot(history.history["loss"], label="training_loss")
+        plt.plot(history.history["val_loss"], label="validation_loss")
+        plt.legend()
+        plt.show()
 
 
     print("Done")
@@ -163,7 +170,7 @@ def inspect_intermediate_layer(model, training_inputs, index_of_layer_to_inspect
     for i in range(8):
         axes[i].imshow(Xresult[0, :, :, i])
     plt.show()
-    
+
 
 if __name__ == "__main__":
     main()
