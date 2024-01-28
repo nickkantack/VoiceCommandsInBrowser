@@ -139,12 +139,12 @@ def main():
 
     model.summary()
 
-    model.compile(optimizer=tf.keras.optimizers.legacy.RMSprop(learning_rate=1E-3),
+    model.compile(optimizer=tf.keras.optimizers.legacy.Adam(learning_rate=1E-4),
                 loss=tf.keras.losses.MeanSquaredError(),
                 metrics=['mean_squared_error'])
 
     if TRAIN_MODEL:
-        history = model.fit(train_dataset, epochs=200, 
+        history = model.fit(train_dataset, epochs=400, 
                             validation_data=test_dataset)
         model.save("model.keras")
 
