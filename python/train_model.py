@@ -93,32 +93,27 @@ def main():
     model = tf.keras.Sequential([
 
         Preprocessor(),
-        # tf.keras.layers.Normalization(input_shape=(60, 256, 1)),
 
         tf.keras.layers.Conv2D(8, (3, 3)),
         tf.keras.layers.LeakyReLU(),
-        # tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPooling2D((1, 2)),
 
         tf.keras.layers.Conv2D(16, (2, 3)),
         tf.keras.layers.LeakyReLU(),
-        # tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPooling2D((1, 2)),
 
         tf.keras.layers.Conv2D(24, (2, 3)),
         tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((2, 2)),
-        # tf.keras.layers.BatchNormalization(),
 
         tf.keras.layers.Conv2D(32, (2, 3)),
         tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((2, 2)),
-        # tf.keras.layers.BatchNormalization(),
 
         tf.keras.layers.Conv2D(48, (2, 3)),
         tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((2, 2)),
-        # tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.BatchNormalization(),
 
         tf.keras.layers.Conv2D(64, (3, 3)),
         tf.keras.layers.LeakyReLU(),
@@ -144,7 +139,7 @@ def main():
                 metrics=['mean_squared_error'])
 
     if TRAIN_MODEL:
-        history = model.fit(train_dataset, epochs=400, 
+        history = model.fit(train_dataset, epochs=600, 
                             validation_data=test_dataset)
         model.save("model.keras")
 
