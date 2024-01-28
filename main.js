@@ -9,6 +9,8 @@ import { spectrogramBuilder } from "./dynamicVariables.js";
 import { SpectrogramPreprocessor } from "./neuralNetwork.js";
 import { labelGenerator } from "./sampleCollection.js";
 
+const MODEL_URL = 'python/model_web/model.json';
+
 let audioContext;
 let source;
 let animationFrame;
@@ -79,8 +81,9 @@ let database = new Database({ databaseName: "KeywordSpectra", objectStoreName: "
 tf.setBackend('cpu').then(async () => {
 
     try {
-        throw new Error(`Forcing model reinstantiation`);
-        model = await tf.loadLayersModel('indexeddb://my-model');
+        // throw new Error(`Forcing model reinstantiation`);
+        model = await tf.loadGraphModel(MODEL_URL);
+        // model = await tf.loadLayersModel('indexeddb://my-model');
         console.log(`Succeeded in loading model`);
     } catch (e) {
 
@@ -123,13 +126,12 @@ tf.setBackend('cpu').then(async () => {
 
         // model.add(tf.layers.activation({ activation: "sigmoid" }))
 
+        // model.summary();
+
+        // model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(1) });
     }
 
-    model.summary();
-
-    model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(1) });
-
-    const randomInput = tf.randomNormal([1, 60, 256]);
+    const randomInput = tf.randomNormal([1, 60, 256, 1]);
     // randomInput.print();
 
     // new SpectrogramPreprocessor().apply(randomInput).print();
