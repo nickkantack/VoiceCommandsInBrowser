@@ -5,8 +5,8 @@ import tensorflow as tf
 import keras
 from pprint import pprint
 
-LOAD_MODEL = True
-TRAIN_MODEL = False
+LOAD_MODEL = False
+TRAIN_MODEL = True
 
 @keras.saving.register_keras_serializable('my_package')
 class Preprocessor(tf.keras.layers.Layer):
@@ -97,31 +97,34 @@ def main():
 
         tf.keras.layers.Conv2D(8, (3, 3)),
         tf.keras.layers.LeakyReLU(),
-        tf.keras.layers.BatchNormalization(),
+        # tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPooling2D((1, 2)),
 
         tf.keras.layers.Conv2D(16, (2, 3)),
         tf.keras.layers.LeakyReLU(),
-        tf.keras.layers.BatchNormalization(),
+        # tf.keras.layers.BatchNormalization(),
         tf.keras.layers.MaxPooling2D((1, 2)),
+
+        tf.keras.layers.Conv2D(24, (2, 3)),
+        tf.keras.layers.LeakyReLU(),
+        tf.keras.layers.MaxPooling2D((2, 2)),
+        # tf.keras.layers.BatchNormalization(),
 
         tf.keras.layers.Conv2D(32, (2, 3)),
         tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((2, 2)),
         # tf.keras.layers.BatchNormalization(),
 
-        tf.keras.layers.Conv2D(64, (2, 3)),
+        tf.keras.layers.Conv2D(48, (2, 3)),
         tf.keras.layers.LeakyReLU(),
         tf.keras.layers.MaxPooling2D((2, 2)),
         # tf.keras.layers.BatchNormalization(),
 
-        tf.keras.layers.Conv2D(64, (2, 3)),
+        tf.keras.layers.Conv2D(64, (3, 3)),
         tf.keras.layers.LeakyReLU(),
-        tf.keras.layers.MaxPooling2D((2, 2)),
-        # tf.keras.layers.BatchNormalization(),
+        tf.keras.layers.AveragePooling2D((3, 3)),
 
         tf.keras.layers.Flatten(),
-        tf.keras.layers.Dense(128, activation='relu'),
         tf.keras.layers.Dense(4, activation='sigmoid'),
     ])
 
@@ -132,7 +135,7 @@ def main():
     model.build(input_shape=(1, 60, 256, 1))
 
     # Make the intermediate model for looking at activations
-    inspect_intermediate_layer(model, training_inputs, index_of_layer_to_inspect=5)
+    print(f"There are {len(model.layers)} total layers")
 
     model.summary()
 
@@ -141,7 +144,7 @@ def main():
                 metrics=['mean_squared_error'])
 
     if TRAIN_MODEL:
-        history = model.fit(train_dataset, epochs=20, 
+        history = model.fit(train_dataset, epochs=200, 
                             validation_data=test_dataset)
         model.save("model.keras")
 
@@ -150,13 +153,13 @@ def main():
         plt.legend()
         plt.show()
 
+    # inspect_intermediate_layer(model, validation_inputs, index_of_layer_to_inspect=18)
 
     print("Done")
 
 
 def inspect_intermediate_layer(model, training_inputs, index_of_layer_to_inspect):
 
-    index_of_layer_to_inspect = 5
     XX = model.input 
     YY = model.layers[index_of_layer_to_inspect].output
     # pprint(vars(model.layers[0])) # Prints attributes of the layer to help identify it
