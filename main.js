@@ -263,7 +263,7 @@ analyzeSpectrogramButton.addEventListener("click", () => {
         return;
     }
 
-    const inputTensor = tf.tensor(spectrogramBuilder.getSpectra()).expandDims(0);
+    const inputTensor = tf.tensor(spectrogramBuilder.getSpectra()).expandDims(0).expandDims(3);
     const outputTensor = model.predict(inputTensor);
     outputTensor.print();
 
