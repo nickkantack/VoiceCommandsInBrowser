@@ -82,9 +82,10 @@ tf.setBackend('cpu').then(async () => {
 
     try {
         // throw new Error(`Forcing model reinstantiation`);
-        model = await tf.loadGraphModel(MODEL_URL);
-        // model = await tf.loadLayersModel('indexeddb://my-model');
+        // model = await tf.loadGraphModel(MODEL_URL);
+        model = await tf.loadLayersModel('indexeddb://my-model');
         console.log(`Succeeded in loading model`);
+        model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(1) });
     } catch (e) {
 
         console.log(`Failed to load the model. Building from scratch`);
@@ -93,27 +94,23 @@ tf.setBackend('cpu').then(async () => {
         model = tf.sequential();
         model.add(new SpectrogramPreprocessor({ inputShape: [60, 256] }));
 
-        model.add(tf.layers.conv2d({ filters: 8, kernelSize: [3, 3] }));
-        model.add(tf.layers.batchNormalization());
+        model.add(tf.layers.conv2d({ filters: 8, kernelSize: [3, 3], useBias: false }));
         model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [1, 2] }));
 
-        model.add(tf.layers.conv2d({ filters: 12, kernelSize: [2, 3] }));
-        model.add(tf.layers.batchNormalization());
+        model.add(tf.layers.conv2d({ filters: 12, kernelSize: [2, 3], useBias: false }));
         model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [1, 2] }));
 
-        model.add(tf.layers.conv2d({ filters: 16, kernelSize: [2, 3] }));
-        model.add(tf.layers.batchNormalization());
+        model.add(tf.layers.conv2d({ filters: 16, kernelSize: [2, 3], useBias: false }));
         model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
 
-        model.add(tf.layers.conv2d({ filters: 20, kernelSize: [2, 3] }));
-        model.add(tf.layers.batchNormalization());
+        model.add(tf.layers.conv2d({ filters: 20, kernelSize: [2, 3], useBias: false }));
         model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
 
-        model.add(tf.layers.conv2d({ filters: 4, kernelSize: [2, 3] }));
+        model.add(tf.layers.conv2d({ filters: 4, kernelSize: [2, 3], useBias: false }));
         model.add(tf.layers.batchNormalization());
         model.add(tf.layers.leakyReLU());
         model.add(tf.layers.maxPooling2d({ poolSize: [2, 2] }));
@@ -122,7 +119,7 @@ tf.setBackend('cpu').then(async () => {
 
         model.add(tf.layers.flatten());
         model.add(tf.layers.dense({ units: 36, activation: "relu" }));
-        model.add(tf.layers.dense({ units: 4, activation: "sigmoid" }));
+        model.add(tf.layers.dense({ units: 2, activation: "sigmoid" }));
 
         // model.add(tf.layers.activation({ activation: "sigmoid" }))
 
@@ -131,7 +128,7 @@ tf.setBackend('cpu').then(async () => {
         // model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(1) });
     }
 
-    const randomInput = tf.randomNormal([1, 60, 256, 1]);
+    const randomInput = tf.randomNormal([1, 60, 256]);
     // randomInput.print();
 
     // new SpectrogramPreprocessor().apply(randomInput).print();
@@ -155,7 +152,7 @@ tf.setBackend('cpu').then(async () => {
     */
 
     // Save the model
-    await model.save('indexeddb://my-model');
+    // await model.save('indexeddb://my-model');
 
 });
 
@@ -228,7 +225,7 @@ trainModelButton.addEventListener("click", async () => {
     // Run the fit
     const startTime = Date.now();
     model.fit(oneBigSpectrogramTrainingTensor, oneBigLabelTrainingTensor, { 
-        epochs: 6, 
+        epochs: 16, 
         batchSize: 4, 
         shuffle: true,
         callbacks: { onBatchEnd } 
@@ -263,7 +260,8 @@ analyzeSpectrogramButton.addEventListener("click", () => {
         return;
     }
 
-    const inputTensor = tf.tensor(spectrogramBuilder.getSpectra()).expandDims(0).expandDims(3);
+    const inputTensor = tf.tensor(spectrogramBuilder.getSpectra()).expandDims(0);
+    inputTensor.print();
     const outputTensor = model.predict(inputTensor);
     outputTensor.print();
 
@@ -271,7 +269,6 @@ analyzeSpectrogramButton.addEventListener("click", () => {
         console.log(result);
         // TODO create a label code and use the labelGenerator to produce a script
         const predictedLabelsAsArray = result[0].map(x => Math.round(x));
-        console.log(predictedLabelsAsArray);
         const labelString = predictedLabelsAsArray.join("");
         console.log(labelString);
 

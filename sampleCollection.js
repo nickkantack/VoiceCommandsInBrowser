@@ -10,7 +10,7 @@ let labelGenerator;
 (async () => {
 
     labelGenerator = new LabelGenerator({
-        keywords: ["LARS", "LPCS", "IAD", "NRT"]
+        keywords: ["PHRASE", "RANDOM"]
     });
 
     // Instantiate a connection to the database
