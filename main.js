@@ -123,9 +123,9 @@ tf.setBackend('cpu').then(async () => {
 
         // model.add(tf.layers.activation({ activation: "sigmoid" }))
 
-        // model.summary();
+        model.summary();
 
-        // model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(1) });
+        model.compile({loss: 'meanSquaredError', optimizer: tf.train.sgd(1) });
     }
 
     const randomInput = tf.randomNormal([1, 60, 256]);
